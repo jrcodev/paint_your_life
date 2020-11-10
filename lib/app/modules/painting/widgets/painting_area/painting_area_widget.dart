@@ -2,63 +2,73 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:paint_your_life/app/modules/painting/models/line.dart';
-import 'package:paint_your_life/app/modules/painting/painting_controller.dart';
 
-class PaintingAreaWidget extends StatefulWidget {
-  final PaintingController controller;
-
-  const PaintingAreaWidget({Key key, this.controller}) : super(key: key);
-
+class PaintingArea extends StatefulWidget {
   @override
-  _PaintingAreaWidgetState createState() =>
-      _PaintingAreaWidgetState(controller);
+  _PaintingAreaState createState() => _PaintingAreaState();
 }
 
-class _PaintingAreaWidgetState extends State<PaintingAreaWidget> {
-  final PaintingController controller;
-  _PaintingAreaWidgetState(this.controller);
+class _PaintingAreaState extends State<PaintingArea> {
+  List<Path> paths = [];
+  double currentX = .0, currentY = .0, eventX = .0, eventY = .0;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onPanStart: (_) {
-          controller.onPaint();
-          controller.areaViewModel.createNewLine();
-          controller.areaViewModel.lines.last.paintingStyle =
-              controller.styleViewModel.currentPaint;
-        },
-        onPanUpdate: (details) =>
-            controller.areaViewModel.addPoint(details.localPosition),
-        child: StreamBuilder(
-          stream: controller.areaViewModel.pointsStream,
-          initialData: <Line>[],
-          builder: (_, snapshot) {
-            return CustomPaint(
-              foregroundPainter: _PaintingAreaPainter(snapshot.data),
-              child: Container(
-                color: Colors.white,
-              ),
-            );
-          },
-        ));
+      onPanStart: _onPanStart,
+      onPanUpdate: _onPanUpdate,
+      child: CustomPaint(
+        foregroundPainter: PaintingAreaPainter(paths),
+        child: Container(
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _onPanStart(DragStartDetails details) {
+    eventX = details.localPosition.dx;
+    eventY = details.localPosition.dy;
+    currentX = eventX;
+    currentY = eventY;
+    paths.add(Path()..moveTo(eventX, eventY));
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    setState(() {
+      print(paths);
+      eventX = details.localPosition.dx;
+      eventY = details.localPosition.dy;
+      paths.last.quadraticBezierTo(
+          currentX, currentY, (eventX + currentX) / 2, (eventY + currentY) / 2);
+      currentX = eventX;
+      currentY = eventY;
+    });
   }
 }
 
-class _PaintingAreaPainter extends CustomPainter {
-  final List<Line> lines;
-  _PaintingAreaPainter(this.lines);
+class PaintingAreaPainter extends CustomPainter {
+  final List<Path> paths;
+  var painting = Paint()
+    ..color = Colors.black
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round
+    ..strokeWidth = 3.0
+    ..isAntiAlias = true;
 
+  PaintingAreaPainter(this.paths);
   @override
   void paint(Canvas canvas, Size size) {
-    for (Line line in lines) {
-      canvas.drawPoints(PointMode.polygon, line.points, line.paintingStyle);
+    print(paths);
+    for (Path path in paths) {
+      canvas.drawPath(path, painting);
     }
   }
 
   @override
-  bool shouldRepaint(_PaintingAreaPainter oldDelegate) => true;
+  bool shouldRepaint(PaintingAreaPainter oldDelegate) => true;
 
   @override
-  bool shouldRebuildSemantics(_PaintingAreaPainter oldDelegate) => false;
+  bool shouldRebuildSemantics(PaintingAreaPainter oldDelegate) => false;
 }

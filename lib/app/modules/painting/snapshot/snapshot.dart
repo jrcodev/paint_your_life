@@ -1,19 +1,18 @@
-import 'package:paint_your_life/app/modules/painting/models/line.dart';
-
 const SIZE_LIMIT_STACK = 20;
 
+// TODO: adjust this
 class Snapshot {
-  final List<Line> _state;
-  final Originator _originator;
+  // final List<Line> _state;
+  // final Originator _originator;
 
-  Snapshot(this._state, this._originator);
+  // Snapshot(this._state, this._originator);
 
-  void restore() => _originator.setState(_state);
+  // void restore() => _originator.setState(_state);
 }
 
 abstract class Originator {
   Snapshot save();
-  void setState(List<Line> state);
+  // void setState(List<Line> state);
 }
 
 class CareTaker {
@@ -36,7 +35,7 @@ class CareTaker {
 
   void undo() {
     if (_snapshots.isNotEmpty) {
-      _snapshots.removeLast()..restore();
+      // _snapshots.removeLast()..restore();
     }
   }
 }
