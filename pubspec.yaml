@@ -13,7 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   
-  rxdart: any
+  flutter_speed_dial: ^1.2.5
   path_provider: any
 
   cupertino_icons: ^0.1.3

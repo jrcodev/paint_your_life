@@ -1,18 +1,20 @@
+import 'package:flutter/cupertino.dart';
+import 'package:paint_your_life/app/modules/painting/models/path_with_paint.dart';
+
 const SIZE_LIMIT_STACK = 20;
 
-// TODO: adjust this
 class Snapshot {
-  // final List<Line> _state;
-  // final Originator _originator;
+  final List<PathWithPaint> _state;
+  final Originator _originator;
 
-  // Snapshot(this._state, this._originator);
+  Snapshot(this._state, this._originator);
 
-  // void restore() => _originator.setState(_state);
+  void restore() => _originator.setState(_state);
 }
 
 abstract class Originator {
   Snapshot save();
-  // void setState(List<Line> state);
+  void setState(List<PathWithPaint> state);
 }
 
 class CareTaker {
@@ -31,11 +33,13 @@ class CareTaker {
     } else {
       _snapshots.add(_originator.save());
     }
+    debugPrint('MAKE SNAPSHOT: $_snapshots');
   }
 
   void undo() {
+    debugPrint('UNDO: $_snapshots');
     if (_snapshots.isNotEmpty) {
-      // _snapshots.removeLast()..restore();
+      _snapshots.removeLast()..restore();
     }
   }
 }

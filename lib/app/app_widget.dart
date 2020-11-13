@@ -8,6 +8,7 @@ class PaintYourLifeAppWidget extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "Paint Your Life",
       home: PaintingPage(),
+      theme: ThemeData(primaryColor: Colors.amber),
     );
   }
 }

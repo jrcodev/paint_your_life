@@ -2,67 +2,51 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import '../../models/path_with_paint.dart';
+import '../../painting_controller.dart';
 
-class PaintingArea extends StatefulWidget {
+class PaintingAreaWidget extends StatefulWidget {
+  final PaintingController _controller;
+
+  const PaintingAreaWidget(this._controller);
   @override
-  _PaintingAreaState createState() => _PaintingAreaState();
+  _PaintingAreaWidgetState createState() =>
+      _PaintingAreaWidgetState(_controller);
 }
 
-class _PaintingAreaState extends State<PaintingArea> {
-  List<Path> paths = [];
-  double currentX = .0, currentY = .0, eventX = .0, eventY = .0;
+class _PaintingAreaWidgetState extends State<PaintingAreaWidget> {
+  final PaintingController _controller;
+
+  _PaintingAreaWidgetState(this._controller);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPanStart: _onPanStart,
-      onPanUpdate: _onPanUpdate,
-      child: CustomPaint(
-        foregroundPainter: PaintingAreaPainter(paths),
-        child: Container(
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  void _onPanStart(DragStartDetails details) {
-    eventX = details.localPosition.dx;
-    eventY = details.localPosition.dy;
-    currentX = eventX;
-    currentY = eventY;
-    paths.add(Path()..moveTo(eventX, eventY));
-  }
-
-  void _onPanUpdate(DragUpdateDetails details) {
-    setState(() {
-      print(paths);
-      eventX = details.localPosition.dx;
-      eventY = details.localPosition.dy;
-      paths.last.quadraticBezierTo(
-          currentX, currentY, (eventX + currentX) / 2, (eventY + currentY) / 2);
-      currentX = eventX;
-      currentY = eventY;
-    });
+        onPanStart: _controller.onPaintStart,
+        onPanUpdate: _controller.onPaintUpdate,
+        onPanEnd: _controller.onPaintEnd,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (_, __) {
+            return CustomPaint(
+              foregroundPainter: PaintingAreaPainter(_controller.paths),
+              child: Container(
+                color: Colors.white,
+              ),
+            );
+          },
+        ));
   }
 }
 
 class PaintingAreaPainter extends CustomPainter {
-  final List<Path> paths;
-  var painting = Paint()
-    ..color = Colors.black
-    ..style = PaintingStyle.stroke
-    ..strokeCap = StrokeCap.round
-    ..strokeJoin = StrokeJoin.round
-    ..strokeWidth = 3.0
-    ..isAntiAlias = true;
+  final List<PathWithPaint> paths;
 
   PaintingAreaPainter(this.paths);
   @override
   void paint(Canvas canvas, Size size) {
-    print(paths);
-    for (Path path in paths) {
-      canvas.drawPath(path, painting);
+    for (PathWithPaint path in paths) {
+      canvas.drawPath(path, path.paint);
     }
   }
 
