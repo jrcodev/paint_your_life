@@ -13,3 +13,7 @@ extension CopyWith on Paint {
       ..strokeJoin = strokeJoin;
   }
 }
+
+extension ColorsMaterial on ThemeData {
+  MaterialColor get primaryMaterialColor => primaryColor as MaterialColor;
+}

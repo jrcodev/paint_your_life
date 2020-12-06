@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:paint_your_life/app/modules/painting/widgets/pencil_dialog/pencil_dialog_widget.dart';
+import 'package:get_it/get_it.dart';
+
 import 'painting_controller.dart';
-
+import 'utils/utils.dart';
 import 'widgets/painting_area/painting_area_widget.dart';
-
-/*
-  TODO: PENSAR EM COMO MANIPULAR AS CORES E TAMANHO DO PINCEL
-  TODO: APERFEIÇOAR ANIMAÇÕES
-  TODO: IMPLEMENTAR PADRÃO SNAPSHOT
-  TODO: IMPLEMENTAR SALVAR IMAGEM NA GALERIA
-*/
+import 'widgets/style_dialog/style_dialog_widget.dart';
 
 class PaintingPage extends StatefulWidget {
   @override
@@ -19,7 +14,7 @@ class PaintingPage extends StatefulWidget {
 
 class _PaintingPageState extends State<PaintingPage>
     with TickerProviderStateMixin {
-  final _controller = PaintingController();
+  final _controller = GetIt.I.get<PaintingController>();
 
   @override
   void initState() {
@@ -45,21 +40,21 @@ class _PaintingPageState extends State<PaintingPage>
         body: SafeArea(
           child: Stack(
             children: [
-              PaintingAreaWidget(_controller),
+              PaintingAreaWidget(),
               Positioned(
                   left: 16,
                   bottom: 16,
                   child: AnimatedBuilder(
-                      animation: _controller,
+                      animation: _controller.paintingViewModel,
                       builder: (_, __) {
                         return AnimatedBuilder(
                           animation: _controller.translateButtonUp,
                           child: AnimatedOpacity(
                             opacity: _controller.canUndo ? 1 : .0,
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             child: FloatingActionButton(
                               elevation: .0,
-                              child: Icon(Icons.undo),
+                              child: const Icon(Icons.undo),
                               backgroundColor: Theme.of(context)
                                   .primaryMaterialColor
                                   .shade600,
@@ -87,23 +82,22 @@ class _PaintingPageState extends State<PaintingPage>
               overlayColor: Colors.black,
               overlayOpacity: .1,
               elevation: .0,
-              shape: CircleBorder(),
+              shape: const CircleBorder(),
               backgroundColor: Theme.of(context).primaryMaterialColor,
               children: [
                 SpeedDialChild(
-                    child: Icon(Icons.brush),
+                    child: const Icon(Icons.brush),
                     backgroundColor:
                         Theme.of(context).primaryMaterialColor.shade600,
                     onTap: () {
                       showDialog(
                           context: context,
-                          builder: (context) =>
-                              PencilDialogWidget(_controller));
+                          builder: (context) => StyleDialogWidget());
                     }),
                 SpeedDialChild(
-                    child: Icon(Icons.save),
+                    child: const Icon(Icons.save),
                     backgroundColor:
-                        Theme.of(context).primaryMaterialColor.shade700)
+                        Theme.of(context).primaryMaterialColor.shade700),
               ],
             ),
             builder: (_, child) {
@@ -131,8 +125,4 @@ class _PaintingPageState extends State<PaintingPage>
 //       print(e);
 //     }
 //   }
-}
-
-extension on ThemeData {
-  MaterialColor get primaryMaterialColor => primaryColor as MaterialColor;
 }

@@ -1,78 +1,39 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/animation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:memento/memento.dart';
 
 import 'models/path_with_paint.dart';
-import 'snapshot/snapshot.dart';
+import 'widgets/painting_area/painting_area_viewmodel.dart';
+import 'widgets/style_dialog/style_dialog_viewmodel.dart';
 
-class PaintingController extends ChangeNotifier implements Originator {
-  List<PathWithPaint> paths = [];
-  double currentX = .0, currentY = .0, eventX = .0, eventY = .0;
+class PaintingController {
+  final PaintingAreaViewModel paintingViewModel;
+  final StyleDialogViewModel stylingViewModel;
+  final Caretaker<List<PathWithPaint>> _caretaker;
   AnimationController animationController;
   Animation translateButtonUp;
-  Paint currentPaint = defaultPaint;
-  static final Paint defaultPaint = Paint()
-    ..color = Colors.black
-    ..isAntiAlias = true
-    ..style = PaintingStyle.stroke
-    ..strokeCap = StrokeCap.round
-    ..strokeJoin = StrokeJoin.round
-    ..strokeWidth = 1
-    ..isAntiAlias = true;
 
-  CareTaker _caretaker;
+  PaintingController(
+    this.paintingViewModel,
+    this.stylingViewModel,
+    this._caretaker,
+  );
 
-  PaintingController() {
-    _caretaker = CareTaker(this);
-  }
-
-  void onPaintStart(DragStartDetails details) {
-    debugPrint('CAN UNDO: $canUndo');
-
+  void onStartPaint(DragStartDetails details) {
     _caretaker.makeSnapshot();
-    eventX = details.localPosition.dx;
-    eventY = details.localPosition.dy;
-    currentX = eventX;
-    currentY = eventY;
-    paths.add(PathWithPaint(currentPaint)..moveTo(eventX, eventY));
-    animationController.forward();
-  }
-
-  void onPaintUpdate(DragUpdateDetails details) {
-    eventX = details.localPosition.dx;
-    eventY = details.localPosition.dy;
-    paths.last.quadraticBezierTo(
-      currentX,
-      currentY,
-      (eventX + currentX) / 2,
-      (eventY + currentY) / 2,
+    paintingViewModel.startPainting(
+      details.localPosition,
+      stylingViewModel.currentPaint,
     );
-    currentX = eventX;
-    currentY = eventY;
-    notifyListeners();
   }
 
-  void onPaintEnd(_) {
-    animationController.reverse();
+  void onUpdatePaint(DragUpdateDetails details) {
+    paintingViewModel.updatePainting(details.localPosition);
   }
 
-  bool get canUndo => _caretaker.hasSnapshot;
+  void onEndPaint(_) {}
 
   void undo() => _caretaker.undo();
 
-  void setCurrentPaint(Paint newPaint) {
-    currentPaint = newPaint;
-    notifyListeners();
-  }
-
-  @override
-  Snapshot save() {
-    return Snapshot(List.from(paths), this);
-  }
-
-  @override
-  void setState(List<PathWithPaint> state) {
-    debugPrint('SET STATE: $state');
-    paths = state;
-    notifyListeners();
-  }
+  bool get canUndo => _caretaker.hasMemento;
 }

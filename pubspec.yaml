@@ -15,6 +15,9 @@ dependencies:
   
   flutter_speed_dial: ^1.2.5
   path_provider: any
+  memento: 1.0.1
+  get_it: any
+  rxdart: any
 
   cupertino_icons: ^0.1.3
 
